@@ -1,0 +1,6 @@
+/countries/target/
+*.lock
+*.un~
+Session.vim
+.netrwhist
+*~
