@@ -2,7 +2,7 @@
 I will be creating simple apps which will contained in it's own directory
 
 ## Completed
-1. Get country data using the [Rest Coutries API](https://restcountries.eu/) [learning-rust/countries](https://github.com/mahanthathreyee/learning-rust/tree/master/countries)
+1. Get country data using the [Rest Coutries API](https://restcountries.eu/) ([learning-rust/countries](https://github.com/mahanthathreyee/learning-rust/tree/master/countries))
 
 ## TODO
 1. A server that for fetching various data on a particular country 
