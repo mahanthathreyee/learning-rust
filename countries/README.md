@@ -11,6 +11,7 @@
 
 ## Sample
 
+```
 Enter country name: egypt
 Array([
     Object({
@@ -209,3 +210,4 @@ Array([
         }),
     }),
 ])
+```
