@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use url::{Url, ParseError};
+use url::Url;
+use serde_json::{Value};
 
 const COUNTRIES_API: &str = "https://restcountries.eu/rest/v2/name";
 
@@ -23,8 +23,16 @@ impl RequestHandler {
 
         country_url
     }
+    
+    pub fn parse_json(&self, response: &str) ->Value {
+        let v: Value = match serde_json::from_str(response) {
+            Ok(t) => t,
+            Err(_) => panic!("Error parsing json")
+        };
+        return v
+    }
 
-    pub async fn request_country_data(&self, country_name: String) ->Result<HashMap<String,String>, Box<dyn std::error::Error>> {
+    pub async fn request_country_data(&self, country_name: String) ->Value {
         let country_url = self.get_url(country_name);
         println!("URL = {}", country_url.to_string());
         let response = match self.client.get(country_url).send().await {
@@ -36,20 +44,19 @@ impl RequestHandler {
             println!("success!");
         }
 
-        let response = match response.json::<HashMap<String, String>>().await {
+        let response = match response.text().await {
             Ok(t) => t,
             Err(_) => panic!("Error parsing json")
         };
-        Ok(response)
+
+        let response = self.parse_json(response.as_str());
+        return response
     }
 }
 
 #[tokio::main]
 async fn main() {
     let request_handler = RequestHandler::new();
-    let response = match request_handler.request_country_data("USA".to_string()).await {
-        Ok(t) => t,
-        Err(_) => panic!("Error")
-    };
+    let response = request_handler.request_country_data("USA".to_string()).await;
     println!("{:#?}", response);
 }
