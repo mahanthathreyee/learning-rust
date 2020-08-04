@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use url::Url;
 use serde_json::{Value};
 
@@ -34,15 +35,10 @@ impl RequestHandler {
 
     pub async fn request_country_data(&self, country_name: String) ->Value {
         let country_url = self.get_url(country_name);
-        println!("URL = {}", country_url.to_string());
         let response = match self.client.get(country_url).send().await {
             Ok(t) => t,
             Err(_) => panic!("Error contacting country API server")
         };
-
-        if response.status().is_success() {
-            println!("success!");
-        }
 
         let response = match response.text().await {
             Ok(t) => t,
@@ -57,6 +53,15 @@ impl RequestHandler {
 #[tokio::main]
 async fn main() {
     let request_handler = RequestHandler::new();
-    let response = request_handler.request_country_data("USA".to_string()).await;
+
+    let mut country_name: String = String::new(); 
+
+    print!("Enter country name: ");
+    io::stdout().flush().unwrap();
+    io::stdin()
+        .read_line(&mut country_name)
+        .expect("Failed to read country name request");
+
+    let response = request_handler.request_country_data(country_name).await;
     println!("{:#?}", response);
 }
