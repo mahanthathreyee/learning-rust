@@ -1,4 +1,4 @@
-/countries/target/
+*/target/
 *.lock
 *.un~
 Session.vim
