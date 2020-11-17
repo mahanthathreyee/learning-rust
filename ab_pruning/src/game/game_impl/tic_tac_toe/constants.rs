@@ -1,7 +1,7 @@
 pub const BOARD_SIZE: usize = 3;
+pub const WIN_COMBINATION_SUM: i8 = 3;
 
 use std::fmt;
-#[derive(Clone)]
 pub enum TPieces {
     X,
     Y,
