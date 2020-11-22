@@ -10,7 +10,7 @@ impl GameImpl {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Player {
     ONE, 
     TWO,
@@ -20,9 +20,9 @@ pub enum Player {
 impl Player {
     pub fn value(&self) -> i32 {
         match self {
-            Player::ONE => { -1 }
+            Player::ONE => { 1 }
             Player::DRAW => { 0 }
-            Player::TWO => { 1 }
+            Player::TWO => { -1 }
         }
     }
 }

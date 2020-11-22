@@ -1,7 +1,7 @@
 #[path = "./constants.rs"] 
 mod ttt_constants;
 
-use crate::game::Game;
+use crate::{game::Game, piece::Move};
 use crate::game::Piece;
 use crate::constants::Player;
 use crate::constants::GameImpl;
@@ -37,9 +37,30 @@ impl Game for TicTacToeImpl {
         board
     }
 
-    fn user_move(&mut self, board: &mut [Vec<Piece<Self::Piece>>], playerType: Player) {
-        let total_cells = BOARD_SIZE * BOARD_SIZE;
+    fn user_side(&self) -> Player {
+        let mut user_player = Player::DRAW;
+        println!("Choose side One (X) or Two (Y)");
         loop {
+            print!("Choose X or Y :: ");
+            let user_choice = read_user_input::<String>();
+            if user_choice == TPieces::X.value() {
+                user_player = Player::ONE
+            } else if user_choice == TPieces::Y.value() {
+                user_player = Player::TWO
+            } else {
+                println!("Invalid input");
+            }
+            if let Player::DRAW = user_player { continue; } else { break; }
+        }
+        user_player
+    }
+
+    fn user_move(&mut self, board: &mut [Vec<Piece<Self::Piece>>], player_type: Player) {
+        let total_cells = BOARD_SIZE * BOARD_SIZE;
+        let new_piece = tpiece_by_player(player_type);
+        let new_piece_name = new_piece.value().to_string();
+        loop {
+            println!("You are playing as {}, choose a cell :: ", new_piece_name);
             let input_move = read_user_input::<usize>() - 1;
             if input_move <= total_cells {
                 let row = input_move / BOARD_SIZE;
@@ -47,8 +68,7 @@ impl Game for TicTacToeImpl {
                 
                 if let TPieces::EMPTY = board[row][col].value() {
                     // board[row][col].update();
-                    let new_piece = tpiece_by_player(playerType);
-                    board[row][col].update(new_piece, new_piece.value().to_string());
+                    board[row][col].update(new_piece, new_piece_name);
                     break;
                 }
             }
@@ -101,13 +121,15 @@ impl Game for TicTacToeImpl {
         if row_sum.contains(&WIN_COMBINATION_SUM)
             || col_sum.contains(&&WIN_COMBINATION_SUM)
             || diag_sum.contains(&WIN_COMBINATION_SUM) {
-            Some(Player::ONE)
+                debug!("Terminal State || Winner :: {:?} | Row :: {:?} | Col :: {:?} | Diag :: {:?}", Player::ONE, row_sum, col_sum, diag_sum);
+                Some(Player::ONE)
         } else if row_sum.contains(&(- WIN_COMBINATION_SUM))
             || col_sum.contains(&(- WIN_COMBINATION_SUM))
             || diag_sum.contains(&(- WIN_COMBINATION_SUM)) {
-            Some(Player::TWO)
-        } else if empty_cell_count > 0 {
-            Some(Player::DRAW)
+                debug!("Terminal State || Winner :: {:?} | Row :: {:?} | Col :: {:?} | Diag :: {:?}", Player::TWO, row_sum, col_sum, diag_sum);
+                Some(Player::TWO)
+        } else if empty_cell_count == 0 {
+                Some(Player::DRAW)
         } else {
             None
         };
@@ -115,14 +137,14 @@ impl Game for TicTacToeImpl {
         game_winner
     }
 
-    fn move_piece(&self, player: Player, board: &mut [Vec<Piece<Self::Piece>>], _from: [usize; 2], to: [usize; 2]) {
+    fn move_piece(&self, player: Player, board: &mut [Vec<Piece<Self::Piece>>], new_move: Move) {
         //FROM` is not needed in case TicTacToe, but is very useful in case of chess
         let player_piece = match player {
             Player::ONE => { TPieces::X }
             Player::TWO => { TPieces::Y }
             Player::DRAW => { TPieces::EMPTY }
         };
-        board[to[0]][to[1]].update(player_piece.clone(), player_piece.value().to_string());
+        board[new_move.to[0]][new_move.to[1]].update(player_piece.clone(), player_piece.value().to_string());
     }
 
     fn print_board(&self, board: &[Vec<Piece<Self::Piece>>]){

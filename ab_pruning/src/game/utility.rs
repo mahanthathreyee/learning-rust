@@ -1,6 +1,8 @@
-use std::io;
+use std::io::{self, Write};
 
 pub fn read_user_input<T: std::str::FromStr>() -> T {
+    io::stdout().flush().expect("flush failed!");
+
     let mut input_text = String::new();
     io::stdin()
         .read_line(&mut input_text)
@@ -10,5 +12,5 @@ pub fn read_user_input<T: std::str::FromStr>() -> T {
     match trimmed.parse::<T>() {
         Ok(i) => i,
         Err(..) => panic!("Invalid user input")
-    };
+    }
 }

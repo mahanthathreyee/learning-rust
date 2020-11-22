@@ -19,7 +19,7 @@ impl<T> Piece<T> {
     pub fn name(&self) -> &String { &self.name }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Move {
     pub from: [usize; 2], 
     pub to: [usize; 2],
