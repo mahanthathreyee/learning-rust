@@ -14,7 +14,7 @@ pub trait Game {
     
     fn board_factory(&mut self) -> Vec<Vec<Piece<Self::Piece>>>;
     fn user_side(&self) -> Player;
-    fn user_move(&mut self, board: &mut [Vec<Piece<Self::Piece>>], player_type: Player);
+    fn user_move(&self, board: &mut [Vec<Piece<Self::Piece>>], player_type: Player);
     fn successor_state(&self, board: &[Vec<Piece<Self::Piece>>]) -> Vec<([usize; 2], [usize; 2])>;
     fn terminal_state(&self, board: &[Vec<Piece<Self::Piece>>]) -> Option<Player>;
     fn move_piece(&self, player: Player, board: &mut [Vec<Piece<Self::Piece>>], new_move: Move);
@@ -28,10 +28,48 @@ pub fn game_factory(game_impl: GameImpl) -> impl Game {
     }
 }
 
+pub fn play_game<PieceType: Clone>(selected_game: &(impl Game + Game<Piece = PieceType>), board: &mut Vec<Vec<Piece<PieceType>>>, user: Player) {
+    let (bot, mut is_bot_move) = match user {
+        Player::ONE => (Player::TWO, false),
+        Player::TWO => (Player::ONE, true),
+        Player::DRAW => panic!("Invalid Player")
+    };
+
+    let (user_choice, bot_choice) = if is_bot_move { ("Y", "X") } else { ("X", "Y") };
+    let player_choice = format!("USER :: {} \nBOT  :: {}\n", user_choice, bot_choice);
+
+    loop {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        println!("{}", player_choice);
+        selected_game.print_board(&board);
+
+        if let Some(player) = selected_game.terminal_state(&board) {  
+            match player {
+                Player::ONE => println!("Player One has won the match"),
+                Player::TWO => println!("Player Two has won the match"),
+                Player::DRAW => println!("Match resulted in a draw")
+            }
+            break;
+        }
+
+        if is_bot_move {
+            let new_bot_move = compute_bot_move(selected_game, board, bot.clone(), &mut None, 0);
+            if let Some(bot_move) = new_bot_move { 
+                selected_game.move_piece(bot.clone(), board, Move::new(bot_move.from, bot_move.to, 0));
+            }
+            is_bot_move = false;
+        } else {
+            selected_game.user_move(board, user.clone());
+            is_bot_move = true;
+        }
+    }
+
+}
+
 //ASSUMPTIONS
 //1. PLAYER ONE IS MAX 
 //1. PLAYER TWO IS MAX 
-pub fn compute_bot_move<PieceType: Clone>(selected_game: &(impl Game + Game<Piece = PieceType>), board: &mut Vec<Vec<Piece<PieceType>>>, current_player: Player, current_move: &mut Option<Move>, depth: u32) -> Option<Move> {
+fn compute_bot_move<PieceType: Clone>(selected_game: &(impl Game + Game<Piece = PieceType>), board: &mut Vec<Vec<Piece<PieceType>>>, current_player: Player, current_move: &mut Option<Move>, depth: u32) -> Option<Move> {
     if let Some(current_move) = current_move {
         if let Some(player) = selected_game.terminal_state(board) {
             current_move.set_value(player.value());
@@ -62,13 +100,13 @@ pub fn compute_bot_move<PieceType: Clone>(selected_game: &(impl Game + Game<Piec
                     match current_player {
                         Player::ONE => {
                             //IF new_move is greated then assign
-                            if new_move.value() >= best_move.value() { new_move } else { best_move }
+                            if new_move.value() > best_move.value() { new_move } else { best_move }
                         },
                         Player::TWO => {
                             //IF new_move is lesser then assign
-                            if new_move.value() <= best_move.value() { new_move } else { best_move }
+                            if new_move.value() < best_move.value() { new_move } else { best_move }
                         },
-                        Player::DRAW => best_move
+                        Player::DRAW => best_move   //This case will never occur
                     }
                 } else {
                     new_move

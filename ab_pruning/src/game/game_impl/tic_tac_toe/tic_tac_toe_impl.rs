@@ -55,12 +55,11 @@ impl Game for TicTacToeImpl {
         user_player
     }
 
-    fn user_move(&mut self, board: &mut [Vec<Piece<Self::Piece>>], player_type: Player) {
+    fn user_move(&self, board: &mut [Vec<Piece<Self::Piece>>], player_type: Player) {
         let total_cells = BOARD_SIZE * BOARD_SIZE;
         let new_piece = tpiece_by_player(player_type);
         let new_piece_name = new_piece.value().to_string();
         loop {
-            println!("You are playing as {}, choose a cell :: ", new_piece_name);
             let input_move = read_user_input::<usize>() - 1;
             if input_move <= total_cells {
                 let row = input_move / BOARD_SIZE;
